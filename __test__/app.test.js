@@ -31,8 +31,10 @@ describe('POST /movies', () => {
 
     const response = await request.post('/movies').send(movieData);
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({ message: 'New movie added.' });
     const addedMovie = movies.find((movie) => movie.title === movieData.title);
+    expect(response.body).toEqual({
+      message: `New movie added with the id: ${addedMovie.id}`,
+    });
     expect(addedMovie.id).toBeDefined();
     expect(typeof addedMovie.id).toBe('string');
   });
@@ -68,5 +70,77 @@ describe('DELETE /movies/:id', () => {
     expect(response.body).toEqual({
       message: 'No such movie, Please make sure you typed the right ID',
     });
+  });
+});
+
+describe('PUT /movies/:id', () => {
+  it('Should return status code (200) and respond with "Movie updated successfully"', async () => {
+    const movieToUpdate = movies[0];
+    const updatedMovieData = {
+      title: 'Updated Title',
+      director: 'Updated Director',
+      releaseDate: '2023-01-01',
+    };
+
+    const response = await request
+      .put(`/movies/${movieToUpdate.id}`)
+      .send(updatedMovieData);
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      message: `Movie with the id: ${movieToUpdate.id} updated successfully`,
+    });
+
+    // Verify that the movie details are updated correctly
+    const updatedMovie = movies.find((movie) => movie.id === movieToUpdate.id);
+    expect(updatedMovie.title).toBe(updatedMovieData.title);
+    expect(updatedMovie.director).toBe(updatedMovieData.director);
+    expect(updatedMovie.releaseDate).toBe(updatedMovieData.releaseDate);
+  });
+
+  it('Should return status code (404) and respond with "Movie not found"', async () => {
+    const nonExistentMovieId = 'nonexistentmovieid';
+    const updatedMovieData = {
+      title: 'Updated Title',
+      director: 'Updated Director',
+      releaseDate: '2023-01-01',
+    };
+
+    const response = await request
+      .put(`/movies/${nonExistentMovieId}`)
+      .send(updatedMovieData);
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({ message: 'Movie not found' });
+  });
+});
+
+describe('PATCH /movies/:id', () => {
+  it('Should return status code (200) and respond with "Movie updated successfully"', async () => {
+    const movieToUpdate = movies[0];
+    const updatedFields = {
+      title: 'Updated Title',
+    };
+
+    const response = await request
+      .patch(`/movies/${movieToUpdate.id}`)
+      .send(updatedFields);
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ message: 'Movie updated successfully' });
+
+    // Verify that the movie details are updated correctly
+    const updatedMovie = movies.find((movie) => movie.id === movieToUpdate.id);
+    expect(updatedMovie.title).toBe(updatedFields.title);
+  });
+
+  it('Should return status code (404) and respond with "Movie not found"', async () => {
+    const nonExistentMovieId = 'nonexistentmovieid';
+    const updatedFields = {
+      title: 'Updated Title',
+    };
+
+    const response = await request
+      .patch(`/movies/${nonExistentMovieId}`)
+      .send(updatedFields);
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({ message: 'Movie not found' });
   });
 });

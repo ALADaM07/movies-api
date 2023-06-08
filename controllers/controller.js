@@ -33,7 +33,7 @@ export const seeMoviesList = (req, res) => {
 export const movieSearchById = (req, res) => {
   const id = req.params.id;
   for (let movie of movies) {
-    if (movie.id.toString() === id) {
+    if (movie.id === id) {
       res.status(200).json(movie);
       return;
     }
@@ -55,7 +55,9 @@ export const postNewMovie = (req, res) => {
     });
   }
   movies.push(newMovie);
-  res.status(200).send({ message: 'New movie added.' });
+  res
+    .status(200)
+    .send({ message: `New movie added with the id: ${newMovie.id}` });
 };
 
 export const deleteMovie = (req, res) => {
@@ -71,6 +73,64 @@ export const deleteMovie = (req, res) => {
   res.status(200).send({ message: 'Movie deleted successfully!!' });
 };
 
-// export const editMovie = (res, req) => {
+export const editMovie = (req, res) => {
+  const { title, director, releaseDate } = req.body;
+  const movieId = req.params.id;
 
-// };
+  if (
+    title === undefined ||
+    director === undefined ||
+    releaseDate === undefined
+  ) {
+    res
+      .status(400)
+      .send({ message: 'Failed to edit movie due to missing details' });
+    return;
+  }
+
+  const movieIndex = movies.findIndex((movie) => movie.id === movieId);
+  if (movieIndex === -1) {
+    res.status(404).send({ message: 'Movie not found' });
+    return;
+  }
+
+  movies[movieIndex] = {
+    id: movieId,
+    title,
+    director,
+    releaseDate,
+  };
+
+  res
+    .status(200)
+    .send({ message: `Movie with the id: ${movieId} updated successfully` });
+};
+
+export const updateMovie = (req, res) => {
+  const { title, director, releaseDate } = req.body;
+  const movieId = req.params.id;
+
+  if (!title && !director && !releaseDate) {
+    res.status(400).send({ message: 'No fields provided for update' });
+    return;
+  }
+
+  const movieIndex = movies.findIndex((movie) => movie.id === movieId);
+
+  if (movieIndex === -1) {
+    res.status(404).send({ message: 'Movie not found' });
+    return;
+  }
+
+  if (title) {
+    movies[movieIndex].title = title;
+  }
+  if (director) {
+    movies[movieIndex].director = director;
+  }
+  if (releaseDate) {
+    movies[movieIndex].releaseDate = releaseDate;
+  }
+
+  res.status(200).send({ message: 'Movie updated successfully' });
+};
