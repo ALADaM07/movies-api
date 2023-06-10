@@ -23,8 +23,8 @@ export let movies = [
 
 export const seeMoviesList = (req, res) => {
   if (movies.length === 0) {
-    res.status(404).send({
-      error: 'There is no Movies in the list!!',
+    res.status(200).send({
+      message: 'There is no Movies in the list!!',
     });
   }
   res.status(200).json(movies);
@@ -42,22 +42,27 @@ export const movieSearchById = (req, res) => {
 };
 
 export const postNewMovie = (req, res) => {
-  const newMovie = req.body;
-  newMovie.id = uuidv4();
-  if (
-    req.body.title === undefined ||
-    req.body.director === undefined ||
-    req.body.releaseDate === undefined
-  ) {
+  const { title, director, releaseDate } = req.body;
+
+  if (!title || !director || !releaseDate) {
     res.status(400).send({
       message:
-        'Some of the movie details are missing!! Please make sure that you filled all the required details for the movie',
+        'Please make sure to provide a title, director, and release date for the movie you want to add.',
     });
+  } else {
+    const newMovie = {
+      id: uuidv4(),
+      title,
+      director,
+      releaseDate,
+    };
+
+    movies.push(newMovie);
+
+    res
+      .status(201)
+      .send({ message: `New movie added with the id: ${newMovie.id}` });
   }
-  movies.push(newMovie);
-  res
-    .status(200)
-    .send({ message: `New movie added with the id: ${newMovie.id}` });
 };
 
 export const deleteMovie = (req, res) => {
